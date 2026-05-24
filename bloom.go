@@ -20,15 +20,17 @@ func New(s int) Filter {
 func (f *Filter) indexes(s string) []int {
 	res := md5.Sum([]byte(s))
 
-	a := int(binary.LittleEndian.Uint64(res[0:md5.Size/2]) % uint64(f.size*8))
-	a2 := a / f.size
-	a3 := a % 8
+	bitsize := uint64(f.size * 8)
 
-	b := int(binary.LittleEndian.Uint64(res[md5.Size/2:]) % uint64(f.size*8))
-	b2 := b / f.size
-	b3 := b % 8
+	a := int(binary.LittleEndian.Uint64(res[0:md5.Size/2]) % bitsize)
+	bucketPos := a / 8
+	bitPos := a % 8
 
-	return []int{a2, a3, b2, b3}
+	b := int(binary.LittleEndian.Uint64(res[md5.Size/2:]) % bitsize)
+	bucketPos2 := b / 8
+	bitPos2 := b % 8
+
+	return []int{bucketPos, bitPos, bucketPos2, bitPos2}
 }
 
 // Set adds entry into the Filter
