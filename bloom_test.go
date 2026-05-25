@@ -16,7 +16,6 @@ func TestBloom(t *testing.T) {
 	if !res {
 		t.Errorf("foo is missing, should be in the bitset")
 	}
-	return
 
 	res = bl.Get("foo2")
 	if res {
