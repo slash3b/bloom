@@ -1,6 +1,8 @@
 package bloom
 
 import (
+	"io"
+
 	"github.com/OneOfOne/xxhash"
 )
 
@@ -8,6 +10,8 @@ type Filter struct {
 	bits    []byte
 	size    int
 	bitsize uint64
+
+	ioReaderOffset int
 }
 
 func New(s int) Filter {
@@ -16,6 +20,22 @@ func New(s int) Filter {
 		size:    s,
 		bitsize: uint64(s * 8),
 	}
+}
+
+func (f *Filter) Read(p []byte) (int, error) {
+	n := copy(p, f.bits[f.ioReaderOffset:])
+
+	if f.ioReaderOffset >= f.size {
+		return 0, io.EOF
+	}
+
+	if n == 0 {
+		return 0, nil
+	}
+
+	f.ioReaderOffset += n
+
+	return n, nil
 }
 
 // Set adds entry into the Filter

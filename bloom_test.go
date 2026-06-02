@@ -1,7 +1,9 @@
 package bloom_test
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"testing"
 
 	"bloom"
@@ -123,4 +125,29 @@ func benchmarkKeysFrom(prefix string, n int) []string {
 	}
 
 	return keys
+}
+
+func TestReader(t *testing.T) {
+	bl := bloom.New(100)
+
+	bl.Set("foo")
+
+	p := make([]byte, 3)
+	for {
+		n, err := bl.Read(p)
+		if n == 0 && err == nil {
+			fmt.Println("nothing has been read, aborting")
+
+			break
+		}
+
+		if n == 0 && errors.Is(err, io.EOF) {
+			fmt.Println("all good!")
+
+			break
+		}
+
+		fmt.Printf("have read %d bytes\n", n)
+		// p[:n]
+	}
 }
