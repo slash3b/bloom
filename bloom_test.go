@@ -148,6 +148,21 @@ func TestReader(t *testing.T) {
 		}
 
 		fmt.Printf("have read %d bytes\n", n)
-		// p[:n]
+	}
+}
+
+func TestWriter(t *testing.T) {
+	bl := bloom.New(10)
+
+	p := make([]byte, 3)
+	for {
+		n, err := bl.Write(p)
+		if err != nil {
+			fmt.Println(err)
+
+			break
+		}
+
+		fmt.Printf("have written %d bytes\n", n)
 	}
 }

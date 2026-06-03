@@ -1,6 +1,7 @@
 package bloom
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/OneOfOne/xxhash"
@@ -12,6 +13,7 @@ type Filter struct {
 	bitsize uint64
 
 	ioReaderOffset int
+	ioWriterOffset int
 }
 
 func New(s int) Filter {
@@ -26,14 +28,33 @@ func (f *Filter) Read(p []byte) (int, error) {
 	n := copy(p, f.bits[f.ioReaderOffset:])
 
 	if f.ioReaderOffset >= f.size {
+		f.ioReaderOffset = 0
+
 		return 0, io.EOF
 	}
 
 	if n == 0 {
+		f.ioReaderOffset = 0
+
 		return 0, nil
 	}
 
 	f.ioReaderOffset += n
+
+	return n, nil
+}
+
+func (f *Filter) Write(p []byte) (int, error) {
+	n := copy(f.bits[f.ioWriterOffset:], p)
+
+	// if written less that we need
+	if n < len(p) {
+		f.ioWriterOffset = 0
+
+		return n, fmt.Errorf("internal bitset is full")
+	}
+
+	f.ioWriterOffset += n
 
 	return n, nil
 }
